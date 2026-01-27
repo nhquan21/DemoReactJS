@@ -1,0 +1,35 @@
+.header {
+  background: #0f172a;
+  color: white;
+  padding: 14px 0;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.header-right .btn {
+  margin-left: 10px;
+  padding: 6px 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.login {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+.register {
+  background: #38bdf8;
+  color: white;
+}
