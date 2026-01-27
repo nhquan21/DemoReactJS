@@ -7,21 +7,29 @@ import { Link } from "react-router-dom";
 
 export const ProductListPage = () => {
   const [products, setProducts] = useState<DisplayListingProduct[]>();
-  
+  const [isloading,setIsLoading] = useState<boolean>(true);
+
   const count = useMemo(() => products?.length, [products]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const interval = setInterval(fetchProducts, 1000);
+    return () => clearInterval(interval);
+  }, [])
+  const fetchProducts = async () => {
+    try {
       const res: DisplayListingProduct[] = await getAll();
       if (res) {
         setProducts(res);
       }
+    } catch (error) {
+      console.log(error);
+    }finally{
+      setIsLoading(false)
     }
-    fetchProducts();
-  }, [])
+  }
   return (
     <MainLayout>
-      <div className="container product-page">
+      {isloading ? (<div className="container product-page">
         <h3 className="mb-4 page-title">List Product</h3>
 
         {/* FILTER */}
@@ -92,7 +100,7 @@ export const ProductListPage = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div>) : (<Loading />)}
     </MainLayout>
   );
 };
