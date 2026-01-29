@@ -23,7 +23,7 @@ export const LoginPage = () => {
                 // thành công set user vào localStorage
                 localStorage.setItem("user", JSON.stringify(res.data));
                 // chuyển trang
-                navigate("/home");
+                navigate("/");
             } else {
                 alert(res?.message || "Login failed");
             }

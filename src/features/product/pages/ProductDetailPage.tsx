@@ -66,7 +66,7 @@ export const ProductDetailPage = () => {
                 🛒 Thêm vào giỏ
               </button> */}
 
-              <Link to={`/home/product-edit/${product?.id}`} className="btn btn-outline-danger px-4">
+              <Link to={`/product-edit/${product?.id}`} className="btn btn-outline-danger px-4">
                 Edit
               </Link>
             </div>

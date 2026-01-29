@@ -1,60 +1,105 @@
 import { MainLayout } from "../../../layout/MainLayout";
 import "../../../assets/css/product.css";
 import { useEffect, useMemo, useState } from "react";
-import { getAll } from "../../../api/product.api";
 import type { DisplayListingProduct } from "../product.types";
 import { Link } from "react-router-dom";
+import { getAll } from "../../../api/product.api";
 
+type ProductQuery = {
+  keyword?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: "ASC" | "DESC" | "NEW";
+};
 export const ProductListPage = () => {
-  const [products, setProducts] = useState<DisplayListingProduct[]>();
-  const [isloading,setIsLoading] = useState<boolean>(true);
+  const [allProducts, setAllProducts] = useState<DisplayListingProduct[]>([]);
+  const [query, setQuery] = useState<ProductQuery>({});
 
-  const count = useMemo(() => products?.length, [products]);
-
+  // Load toàn bộ sản phẩm 1 lần
   useEffect(() => {
-    const interval = setInterval(fetchProducts, 1000);
-    return () => clearInterval(interval);
-  }, [])
-  const fetchProducts = async () => {
-    try {
-      const res: DisplayListingProduct[] = await getAll();
-      if (res) {
-        setProducts(res);
-      }
-    } catch (error) {
-      console.log(error);
-    }finally{
-      setIsLoading(false)
+    const data = getAll(); // local data
+    setAllProducts(data);
+  }, []);
+
+  // Hàm update query dùng chung
+  const updateQuery = <K extends keyof ProductQuery>(
+    key: K,
+    value: ProductQuery[K]
+  ) => {
+    setQuery((prev) => ({
+      ...prev,
+      [key]: value || undefined,
+    }));
+  };
+
+  // FILTER + SORT LOCAL
+  const products = useMemo(() => {
+    let result = [...allProducts];
+
+    // Search theo tên
+    if (query.keyword) {
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(query.keyword!.toLowerCase())
+      );
     }
-  }
+
+    // Lọc theo giá
+    if (query.minPrice != null) {
+      result = result.filter((p) => p.price >= query.minPrice!);
+    }
+
+    if (query.maxPrice != null) {
+      result = result.filter((p) => p.price <= query.maxPrice!);
+    }
+
+    // Sort
+    if (query.sortBy === "ASC") {
+      result.sort((a, b) => a.price - b.price);
+    }
+
+    if (query.sortBy === "DESC") {
+      result.sort((a, b) => b.price - a.price);
+    }
+
+    if (query.sortBy === "NEW") {
+      result.sort(
+        (a, b) =>
+          new Date(b.createdDate).getTime() -
+          new Date(a.createdDate).getTime()
+      );
+    }
+
+    return result;
+  }, [allProducts, query]);
   return (
     <MainLayout>
-      {isloading ? (<div className="container product-page">
+      <div className="container product-page">
         <h3 className="mb-4 page-title">List Product</h3>
-
         {/* FILTER */}
         <div className="card filter-card shadow-sm mb-4">
           <div className="card-body">
             <div className="row g-3 align-items-end">
               <div className="col-md-4">
                 <label className="form-label">Search</label>
-                <input type="text" className="form-control" placeholder="Enter Name..." />
+                <input type="text" className="form-control" placeholder="Enter Name..."
+                  value={query.keyword ?? ""}
+                  onChange={(e) => updateQuery("keyword", e.target.value)}
+                />
               </div>
 
               <div className="col-md-3">
                 <label className="form-label">Price range</label>
                 <div className="d-flex gap-2">
-                  <input type="number" className="form-control" placeholder="Min" />
-                  <input type="number" className="form-control" placeholder="Max" />
+                  <input type="number" className="form-control" placeholder="Min"
+                    onChange={(e) => updateQuery("minPrice", Number(e.target.value))}
+                  />
+                  <input type="number" className="form-control" placeholder="Max"
+                    onChange={(e) => updateQuery("maxPrice", Number(e.target.value))}
+                  />
                 </div>
               </div>
-
               <div className="col-md-2 d-grid">
-                <button className="btn btn-dark btn-filter">Filter</button>
-              </div>
-
-              <div className="col-md-2 d-grid">
-                <Link to={"/home/product-create"} className="btn btn-success btn-filter">Create Product</Link>
+                <Link to={"/product-create"} className="btn btn-success btn-filter">Create Product</Link>
               </div>
             </div>
           </div>
@@ -63,13 +108,17 @@ export const ProductListPage = () => {
         {/* SORT */}
         <div className="card sort-card shadow-sm mb-4">
           <div className="card-body d-flex justify-content-between align-items-center">
-            <span className="text-muted">Show {count} products</span>
-            <select className="form-select w-auto">
-              <option>Sắp xếp</option>
-              <option>Giá tăng dần</option>
-              <option>Giá giảm dần</option>
-              <option>Mới nhất</option>
+            <span className="text-muted">Show {products.length} products</span>
+            <select
+              className="form-select w-auto"
+              onChange={(e) => updateQuery("sortBy", e.target.value as any)}
+            >
+              <option value="">Sort by</option>
+              <option value="ASC">Price: Low to High</option>
+              <option value="DESC">Price: High to Low</option>
+              <option value="NEW">Newest</option>
             </select>
+
           </div>
         </div>
 
@@ -92,7 +141,7 @@ export const ProductListPage = () => {
                     </div>
 
                     <div className="d-grid gap-2 mt-2">
-                      <Link to={`/home/product-details/${item.id}`} className="btn btn-outline-dark btn-sm" >Product Detail</Link>
+                      <Link to={`/product-details/${item.id}`} className="btn btn-outline-dark btn-sm" >Product Detail</Link>
                     </div>
                   </div>
                 </div>
@@ -100,7 +149,7 @@ export const ProductListPage = () => {
             </div>
           ))}
         </div>
-      </div>) : (<Loading />)}
+      </div>
     </MainLayout>
   );
 };

@@ -21,7 +21,7 @@ export const ProductForm = () => {
             if (!id) return;
 
             const productId = Number(id);
-            const res = findProduct(productId);
+            const res:DisplayListingProduct | undefined = findProduct(productId);
 
             if (res) {
                 reset(res);

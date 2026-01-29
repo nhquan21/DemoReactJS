@@ -70,8 +70,9 @@ export const listProducts: DisplayListingProduct[] = [
 ];
 
 export const getAll = (): DisplayListingProduct[] => {
-    return listProducts;
-}
+    return [...listProducts]; // clone mảng
+};
+
 
 export const save = (
     product: DisplayListingProduct
@@ -136,8 +137,9 @@ export const edit = (
     };
 };
 
-export const findProduct = (id: any): DisplayListingProduct | undefined => {
+export const findProduct = (id: number): DisplayListingProduct | undefined => {
     return listProducts.find(item => item.id === id);
 };
+
 
 
